@@ -2,6 +2,13 @@ GOLDOS
 ======
 Made by Golden Star, based on [UEFI Simple](https://github.com/pbatard/uefi-simple)
 
+| Does                | Doesn't               |
+|---------------------|-----------------------|
+| Print cool stuff    | Boot an os            |
+| Compile             | Read from disk        |
+| React to user input | Work line a normal os |
+| Shut down           | Load an os or drivers |
+
 ## Prerequisites
 
 * [Visual Studio 2022](https://www.visualstudio.com/vs/community/) or gcc/make
