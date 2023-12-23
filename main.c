@@ -1,9 +1,8 @@
 #include <efi.h>
 #include <efilib.h>
 
-CHAR16* getcmd(EFI_SYSTEM_TABLE* st)
+EFI_STATUS getcmd(EFI_SYSTEM_TABLE* st, CHAR16* cmdbuffer)
 {
-	CHAR16* cmdbuffer;
 	EFI_INPUT_KEY keystroke = {SCAN_NULL, CHAR_NULL};
 	UINTN index = 0;
 
@@ -22,33 +21,33 @@ CHAR16* getcmd(EFI_SYSTEM_TABLE* st)
 	
 	cmdbuffer[index] = L'\0';
 	st->ConOut->OutputString(st->ConOut, L"\n\r");
-	st->ConOut->OutputString(st->ConOut, L"boutacopy");
-	CHAR16* out;
-	st->BootServices->AllocatePool(EfiConventionalMemory, (index + 1) * sizeof(CHAR16), &out);
-	st->ConOut->OutputString(st->ConOut, L"alocated");
-	for (UINTN i = 0; i <= index; i++) {
-		out[i] = cmdbuffer[i];
-	}
-	st->ConOut->OutputString(st->ConOut, L"coppied");
-	out[index] = L'\0';
 
 	keystroke.ScanCode = SCAN_NULL;
 	keystroke.UnicodeChar = CHAR_NULL;
-	st->ConOut->OutputString(st->ConOut, L"boutafree");
-	st->BootServices->FreePool(cmdbuffer);
-	st->ConOut->OutputString(st->ConOut, L"ohno");
-	return out;
+
+	if (index > sizeof(cmdbuffer)) return 1;
+	else return EFI_SUCCESS;
+}
+
+void freeit(CHAR16* var)
+{
+	for (int i = 0; i <= sizeof(var); i++)
+	{
+		var[i] = CHAR_NULL;
+	}
 }
 
 EFI_STATUS cmdline(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* st)
 {
+	CHAR16* command;
+	st->BootServices->AllocatePool(EfiConventionalMemory, 4096, &command);
 	SIMPLE_TEXT_OUTPUT_INTERFACE* ConOut = st->ConOut;
 	ConOut->ClearScreen(ConOut);
 	ConOut->OutputString(ConOut, L"0:");
 
 	while (1)
 	{
-		CHAR16* command = getcmd(st);
+		getcmd(st, command);
 		ConOut->OutputString(ConOut, L"You typed: ");
 		for (int i = 0; command[i] != L'\0' || i >= 4096; i++)
 		{
@@ -57,7 +56,7 @@ EFI_STATUS cmdline(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* st)
 		}
 		//st->BootServices->FreePool(command); //You may think that this creates a memory leak, maybe, but for some reason it makes the program halt, so...
 		ConOut->OutputString(ConOut, L"\n\r0:");
-		
+		freeit(command);
 	}
 
 	return EFI_SUCCESS;
