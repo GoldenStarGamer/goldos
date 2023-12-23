@@ -29,7 +29,7 @@ EFI_STATUS getcmd(EFI_SYSTEM_TABLE* st, CHAR16* cmdbuffer)
 	else return EFI_SUCCESS;
 }
 
-void freeit(CHAR16* var)
+void freearr(CHAR16* var)
 {
 	for (int i = 0; i <= sizeof(var); i++)
 	{
@@ -56,7 +56,7 @@ EFI_STATUS cmdline(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* st)
 		}
 		//st->BootServices->FreePool(command); //You may think that this creates a memory leak, maybe, but for some reason it makes the program halt, so...
 		ConOut->OutputString(ConOut, L"\n\r0:");
-		freeit(command);
+		freearr(command);
 	}
 
 	return EFI_SUCCESS;
