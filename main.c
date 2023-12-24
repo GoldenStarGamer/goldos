@@ -1,65 +1,14 @@
-#include <efi.h>
-#include <efilib.h>
+#include "main.h"
 
-EFI_STATUS getcmd(EFI_SYSTEM_TABLE* st, CHAR16* cmdbuffer)
+void shutdown(EFI_SYSTEM_TABLE* st)
 {
-	EFI_INPUT_KEY keystroke = {SCAN_NULL, CHAR_NULL};
-	UINTN index = 0;
+	st->ConOut->ClearScreen(st->ConOut);
 
-	st->BootServices->AllocatePool(EfiConventionalMemory, 4096, &cmdbuffer);
+	st->ConOut->OutputString(st->ConOut, L"Shutting Down");
 
-	while (keystroke.UnicodeChar != CHAR_CARRIAGE_RETURN)
-	{
-		st->BootServices->WaitForEvent(1, &(st->ConIn->WaitForKey), NULL);
-		st->ConIn->ReadKeyStroke(st->ConIn, &keystroke);
+	st->BootServices->Stall(1000000);
 
-		st->ConOut->OutputString(st->ConOut, &keystroke.UnicodeChar);
-
-		cmdbuffer[index] = keystroke.UnicodeChar;
-		index++;
-	}
-	
-	cmdbuffer[index] = L'\0';
-	st->ConOut->OutputString(st->ConOut, L"\n\r");
-
-	keystroke.ScanCode = SCAN_NULL;
-	keystroke.UnicodeChar = CHAR_NULL;
-
-	if (index > sizeof(cmdbuffer)) return 1;
-	else return EFI_SUCCESS;
-}
-
-void freearr(CHAR16* var)
-{
-	for (int i = 0; i <= sizeof(var); i++)
-	{
-		var[i] = CHAR_NULL;
-	}
-}
-
-EFI_STATUS cmdline(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* st)
-{
-	CHAR16* command;
-	st->BootServices->AllocatePool(EfiConventionalMemory, 4096, &command);
-	SIMPLE_TEXT_OUTPUT_INTERFACE* ConOut = st->ConOut;
-	ConOut->ClearScreen(ConOut);
-	ConOut->OutputString(ConOut, L"0:");
-
-	while (1)
-	{
-		getcmd(st, command);
-		ConOut->OutputString(ConOut, L"You typed: ");
-		for (int i = 0; command[i] != L'\0' || i >= 4096; i++)
-		{
-			CHAR16 charString[2] = { command[i], L'\0' };
-			ConOut->OutputString(ConOut, charString);
-		}
-		//st->BootServices->FreePool(command); //You may think that this creates a memory leak, maybe, but for some reason it makes the program halt, so...
-		ConOut->OutputString(ConOut, L"\n\r0:");
-		freearr(command);
-	}
-
-	return EFI_SUCCESS;
+	st->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
 }
 
 // Entry point for the EFI application
@@ -74,16 +23,37 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* st)
 	// Clear the screen
 	ConOut->ClearScreen(ConOut);
 
-	// Display a simple message indicating that the program is running
-	ConOut->OutputString(ConOut, L"It Boots\n\r");
+	// Display a simple message indicating that GoldOS has been booted and it's running what version
+	ConOut->OutputString(ConOut, L"GoldOS Genesis\n\r");
 
 	// Display the firmware vendor information
 	ConOut->OutputString(ConOut, L"Vendor: ");
 	ConOut->OutputString(ConOut, st->FirmwareVendor);
 	ConOut->OutputString(ConOut, L"\n\r");
 
-	// Prompt the user to press a key to exit or press Esc to shut down
-	ConOut->OutputString(ConOut, L"Press a key to continue, or esc to shutdown\n\r");
+	// We need to do extra stuff to display the revision
+	ConOut->OutputString(ConOut, L"Revision: ");
+
+	// Convert hexadecimal value to decimal string
+	CHAR16 revisionString[11];  // Assuming a 32-bit hexadecimal value
+	UINT32 value = st->FirmwareRevision;
+	int index = 10;
+
+	do {
+		revisionString[--index] = L'0' + (value % 10);
+		value /= 10;
+	} while (value != 0);
+
+	// Output the string
+	ConOut->OutputString(ConOut, revisionString + index);
+	ConOut->OutputString(ConOut, L"\n\r");
+
+
+	// Tell that they can shutdown at any time, this is kind of a lie, it only works where the program reacts to esc but anyway
+	ConOut->OutputString(ConOut, L"Press esc at any time to shutdown\n\r");
+
+	// Prompt the user to press a key to continue
+	ConOut->OutputString(ConOut, L"Press a key to continue.\n\r");
 
 	// Wait for a key press
 	st->BootServices->WaitForEvent(1, &(st->ConIn->WaitForKey), NULL);
@@ -94,14 +64,9 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* st)
 	// Check if the pressed key is the Esc key
 	if (finalthingkey.ScanCode == SCAN_ESC)
 	{
-		// Display a message indicating that the system is shutting down
-		ConOut->OutputString(ConOut, L"Shutting Down");
-
-		// Stall for 3 seconds (in microseconds) before shutting down
-		st->BootServices->Stall(3 * 1000000);
 
 		// Perform a system shutdown
-		st->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+		shutdown(st);
 	}
 	else
 	{
