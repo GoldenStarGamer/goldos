@@ -1,4 +1,15 @@
-#include "main.h"
+#include "cmdline.h"
+
+void shutdown(EFI_SYSTEM_TABLE* st)
+{
+	st->ConOut->ClearScreen(st->ConOut);
+
+	st->ConOut->OutputString(st->ConOut, L"Shutting Down");
+
+	st->BootServices->Stall(1000000);
+
+	st->RuntimeServices->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
+}
 
 EFI_STATUS getcmd(EFI_SYSTEM_TABLE* st, CHAR16* cmdbuffer)
 {

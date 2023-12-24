@@ -19,15 +19,18 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\main.c">
+    <ClCompile Include="..\..\cmdline.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\cmdline.c">
+    <ClCompile Include="..\..\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="main.h">
+    <ClInclude Include="..\..\cmdline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

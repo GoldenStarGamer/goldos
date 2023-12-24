@@ -394,7 +394,8 @@
     <None Include="..\..\debug.vbs" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="main.h" />
+    <ClInclude Include="..\..\cmdline.h" />
+    <ClInclude Include="..\..\main.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

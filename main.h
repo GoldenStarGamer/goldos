@@ -1,4 +1,4 @@
 #pragma once
-#include<efi.h>
+#include <efi.h>
+#include "cmdline.h"
 
-void shutdown(EFI_SYSTEM_TABLE* st);
