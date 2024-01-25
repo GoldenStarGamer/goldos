@@ -6,7 +6,7 @@ Made by Golden Star, based on [UEFI Simple](https://github.com/pbatard/uefi-simp
 |---------------------|-----------------------|
 | Print cool stuff    | Boot an os            |
 | Compile             | Read from disk        |
-| React to user input | Work line a normal os |
+| React to user input | Work like a normal os |
 | Shut down           | Load an os or drivers |
 
 ## Prerequisites
